@@ -3,6 +3,8 @@ package org.example.smartcompus.service;
 import lombok.RequiredArgsConstructor;
 import org.example.smartcompus.Mappers.TimetableMapper;
 import org.example.smartcompus.dto.TimetableDto.TimetableDto;
+import org.example.smartcompus.exceptions.ConflictException;
+import org.example.smartcompus.exceptions.ResourceNotFoundException;
 import org.example.smartcompus.model.Course;
 import org.example.smartcompus.model.Timetable;
 import org.example.smartcompus.repository.CourseRepository;
@@ -17,7 +19,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class TimetableServiceImpl implements ITimetableService {
+public class TimetableService implements ITimetableService {
 
     private final TimetableRepository timetableRepository;
     private final CourseRepository courseRepository;
@@ -25,16 +27,13 @@ public class TimetableServiceImpl implements ITimetableService {
 
     @Override
     public TimetableDto createSchedule(TimetableDto dto) {
-        // 1. Verify if the course exists
         Course course = courseRepository.findById(dto.getCourseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
-        // 2. Business Rule: Check if the room/teacher is available (Optional Logic)
-        if (!isRoomAvailable(dto.getRoomName(), dto.getDay(), dto.getStartTime(), dto.getEndTime())) {
+        if (!isRoomAvailable(dto.getRoomId(), dto.getDay(), dto.getStartTime(), dto.getEndTime())) {
             throw new ConflictException("Room is already occupied at this time");
         }
 
-        // 3. Map and Save
         Timetable timetable = timetableMapper.toEntity(dto);
         timetable.setCourse(course);
         return timetableMapper.toDto(timetableRepository.save(timetable));
@@ -50,8 +49,29 @@ public class TimetableServiceImpl implements ITimetableService {
     }
 
     @Override
-    public boolean isRoomAvailable(String room, String day, LocalTime start, LocalTime end) {
+    @Transactional(readOnly = true)
+    public List<TimetableDto> getTeacherSchedule(Long teacherId) {
+        List<Timetable> timetables = timetableRepository.findByCourse_Teacher_Id(teacherId);
+        return timetables.stream()
+                .map(timetableMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public boolean isRoomAvailable(Long roomId, String day, LocalTime start, LocalTime end) {
         // Query repository to see if any timetable entry overlaps
-        return !timetableRepository.existsOverlap(room, day, start, end);
+        return !timetableRepository.existsOverlap(roomId, day, start, end);
+    }
+
+    @Override
+    public TimetableDto getTimetableById(Long id) {
+        return timetableRepository.findById(id)
+                .map(timetableMapper::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("Timetable not found"));
+    }
+
+    @Override
+    public void deleteTimetable(Long id) {
+        timetableRepository.deleteById(id);
     }
 }
