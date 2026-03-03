@@ -1,12 +1,20 @@
 package org.example.smartcompus.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.smartcompus.Mappers.StudentMapper;
+import org.example.smartcompus.Mappers.TeacherMapper;
 import org.example.smartcompus.Mappers.UserMapper;
+import org.example.smartcompus.dto.StudentDto.StudentRequestDto;
+import org.example.smartcompus.dto.TeacherDto.TeacherRequestDto;
 import org.example.smartcompus.dto.UserDto.UserRequestDto;
 import org.example.smartcompus.dto.UserDto.UserResponseDto;
 import org.example.smartcompus.exceptions.UserNotFoundException;
+import org.example.smartcompus.model.Student;
+import org.example.smartcompus.model.Teacher;
 import org.example.smartcompus.model.User;
 import org.example.smartcompus.model.enums.UserRole;
+import org.example.smartcompus.repository.StudentRepository;
+import org.example.smartcompus.repository.TeacherRepository;
 import org.example.smartcompus.repository.UserRepository;
 import org.example.smartcompus.service.interfaces.IUserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,9 +26,13 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class UserService implements IUserService {
-    private UserRepository userRepository;
-    private UserMapper userMapper;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
+    private final UserMapper userMapper;
+    private final StudentMapper studentMapper;
+    private final TeacherMapper teacherMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public UserResponseDto getUserById(Long id) {
         return userRepository.findById(id)
@@ -54,22 +66,31 @@ public class UserService implements IUserService {
     }
 
     public UserResponseDto registerUser(UserRequestDto userDto) {
+        if (userDto.getRole() == UserRole.ROLE_STUDENT && userDto instanceof StudentRequestDto studentDto) {
+            Student student = studentMapper.toEntityRequest(studentDto);
+            student.setPassword(passwordEncoder.encode(student.getPassword()));
+            return studentMapper.toDto(studentRepository.save(student));
+        }
+
+        if (userDto.getRole() == UserRole.ROLE_TEACHER && userDto instanceof TeacherRequestDto teacherDto) {
+            Teacher teacher = teacherMapper.toEntityRequest(teacherDto);
+            teacher.setPassword(passwordEncoder.encode(teacher.getPassword()));
+            return teacherMapper.toDto(teacherRepository.save(teacher));
+        }
+
+        // ROLE_ADMIN or ROLE_ADMIN_STAFF
         User user = userMapper.toEntityRequest(userDto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        User savedUser = userRepository.save(user);
-        return userMapper.toDto(savedUser);
+        return userMapper.toDto(userRepository.save(user));
     }
 
     @Override
     public UserResponseDto updateProfile(Long id, UserRequestDto userDto) {
-        // 1. Get existing managed entity
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Cannot update: User " + id + " not found"));
 
-        // 2. Map changes from DTO onto the EXISTING entity (requires a void mapping method in Mapper)
         userMapper.updateUserFromDto(userDto, existingUser);
 
-        // 3. Handle password specifically if provided
         if (userDto.getPassword() != null && !userDto.getPassword().isBlank()) {
             existingUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
         }
