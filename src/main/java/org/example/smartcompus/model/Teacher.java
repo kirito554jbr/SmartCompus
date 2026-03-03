@@ -13,9 +13,10 @@ import java.util.List;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
+@DiscriminatorValue("TEACHER")
 public class Teacher extends  User {
 
-    private int employeeNumber;
+    private String employeeNumber;
     private String speciality;
 
     @OneToMany(mappedBy = "teacher")
