@@ -11,12 +11,15 @@ import java.util.List;
 public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idCourse;
+    private Long idCourse;
     private String name;
     private String code;
 
     @ManyToOne @JoinColumn(name = "teacher_id")
     private Teacher teacher;
+
+    @ManyToMany(mappedBy = "courses")
+    private List<Student> students;
 
     @OneToMany(mappedBy = "course")
     private List<Timetable> timetables;
