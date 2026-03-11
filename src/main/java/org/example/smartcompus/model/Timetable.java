@@ -18,4 +18,8 @@ public class Timetable {
 
     @ManyToOne @JoinColumn(name = "course_id")
     private Course course;
+
+    @ManyToOne
+    @JoinColumn(name = "room_id")
+    private Room room;
 }

@@ -6,8 +6,10 @@ import org.example.smartcompus.dto.TimetableDto.TimetableDto;
 import org.example.smartcompus.exceptions.ConflictException;
 import org.example.smartcompus.exceptions.ResourceNotFoundException;
 import org.example.smartcompus.model.Course;
+import org.example.smartcompus.model.Room;
 import org.example.smartcompus.model.Timetable;
 import org.example.smartcompus.repository.CourseRepository;
+import org.example.smartcompus.repository.RoomRepository;
 import org.example.smartcompus.repository.TimetableRepository;
 import org.example.smartcompus.service.interfaces.ITimetableService;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class TimetableService implements ITimetableService {
 
     private final TimetableRepository timetableRepository;
     private final CourseRepository courseRepository;
+    private final RoomRepository roomRepository;
     private final TimetableMapper timetableMapper;
 
     @Override
@@ -30,12 +33,16 @@ public class TimetableService implements ITimetableService {
         Course course = courseRepository.findById(dto.getCourseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
+        Room room = roomRepository.findById(dto.getRoomId())
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+
         if (!isRoomAvailable(dto.getRoomId(), dto.getDay(), dto.getStartTime(), dto.getEndTime())) {
             throw new ConflictException("Room is already occupied at this time");
         }
 
         Timetable timetable = timetableMapper.toEntity(dto);
         timetable.setCourse(course);
+        timetable.setRoom(room);
         return timetableMapper.toDto(timetableRepository.save(timetable));
     }
 
@@ -51,7 +58,7 @@ public class TimetableService implements ITimetableService {
     @Override
     @Transactional(readOnly = true)
     public List<TimetableDto> getTeacherSchedule(Long teacherId) {
-        List<Timetable> timetables = timetableRepository.findByCourse_Teacher_Id(teacherId);
+        List<Timetable> timetables = timetableRepository.findByCourse_Teacher_IdUser(teacherId);
         return timetables.stream()
                 .map(timetableMapper::toDto)
                 .toList();

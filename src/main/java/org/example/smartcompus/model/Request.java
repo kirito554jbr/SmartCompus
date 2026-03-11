@@ -7,6 +7,7 @@ import org.example.smartcompus.model.enums.RequestStatus;
 import org.example.smartcompus.model.enums.RequestType;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -20,7 +21,8 @@ public class Request {
     private String description;
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     @ManyToOne @JoinColumn(name = "student_id")
     private Student student;

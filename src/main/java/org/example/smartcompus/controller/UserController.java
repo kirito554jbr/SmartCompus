@@ -20,11 +20,6 @@ public class UserController {
     private final IUserService userService;
 
 
-    @PostMapping("/register")
-    public ResponseEntity<UserResponseDto> register(@Valid @RequestBody UserRequestDto userDto) {
-        return new ResponseEntity<>(userService.registerUser(userDto), HttpStatus.CREATED);
-    }
-
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateProfile(

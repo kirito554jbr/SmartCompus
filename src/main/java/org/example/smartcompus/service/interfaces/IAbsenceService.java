@@ -7,7 +7,7 @@ import java.util.List;
 public interface IAbsenceService {
     AbsenceDto markStudentAbsent(AbsenceDto dto);
     List<AbsenceDto> getAbsencesByStudent(Long studentId);
-    AbsenceDto justifyAbsence(Long absenceId, String reason);
+    AbsenceDto justifyAbsence(Long absenceId, boolean isAccepted);
     List<AbsenceDto> getAllAbsences();
     AbsenceDto getAbsenceById(Long id);
     void deleteAbsence(Long id);

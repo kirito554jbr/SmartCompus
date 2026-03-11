@@ -7,8 +7,9 @@ import java.util.List;
 public interface ICourseService {
     CourseDto createCourse(CourseDto courseDto);
     CourseDto assignTeacherToCourse(Long courseId, Long teacherId);
-    List<CourseDto> getCoursesBySpeciality(String speciality);
+    List<CourseDto> getCoursesTaughtByTeacher(Long  teacherId);
     List<CourseDto> getAllCourses();
     void deleteCourse(Long id);
     CourseDto getCourseById(Long id);
+    String enrollStudentInCourse(Long courseId, Long studentId);
 }

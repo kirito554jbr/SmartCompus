@@ -3,6 +3,7 @@ package org.example.smartcompus.dto.RequestDto;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class RequestDto {
@@ -10,7 +11,8 @@ public class RequestDto {
     private String type;   // ENROLLMENT_CERTIFICATE, TRANSCRIPT, etc.
     private String description;
     private String status; // PENDING, APPROVED, REJECTED
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private Long studentId;
     private String studentFullName;
 }

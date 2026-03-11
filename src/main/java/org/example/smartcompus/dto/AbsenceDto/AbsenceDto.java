@@ -1,6 +1,7 @@
 package org.example.smartcompus.dto.AbsenceDto;
 
 import lombok.Data;
+import org.example.smartcompus.model.enums.AbsenceStatus;
 
 import java.time.LocalDate;
 
@@ -8,7 +9,7 @@ import java.time.LocalDate;
 public class AbsenceDto {
     private Long id;
     private LocalDate date;
-    private String status; // JUSTIFIED, UNJUSTIFIED, PENDING
+    private AbsenceStatus status; // JUSTIFIED, UNJUSTIFIED, PENDING
     private Long studentId;
     private String studentFullName;
 }

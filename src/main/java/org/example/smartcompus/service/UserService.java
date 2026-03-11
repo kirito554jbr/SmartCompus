@@ -69,18 +69,21 @@ public class UserService implements IUserService {
         if (userDto.getRole() == UserRole.ROLE_STUDENT && userDto instanceof StudentRequestDto studentDto) {
             Student student = studentMapper.toEntityRequest(studentDto);
             student.setPassword(passwordEncoder.encode(student.getPassword()));
+            student.setEnabeld(true);
             return studentMapper.toDto(studentRepository.save(student));
         }
 
         if (userDto.getRole() == UserRole.ROLE_TEACHER && userDto instanceof TeacherRequestDto teacherDto) {
             Teacher teacher = teacherMapper.toEntityRequest(teacherDto);
             teacher.setPassword(passwordEncoder.encode(teacher.getPassword()));
+            teacher.setEnabeld(true);
             return teacherMapper.toDto(teacherRepository.save(teacher));
         }
 
         // ROLE_ADMIN or ROLE_ADMIN_STAFF
         User user = userMapper.toEntityRequest(userDto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setEnabeld(true);
         return userMapper.toDto(userRepository.save(user));
     }
 

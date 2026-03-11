@@ -11,5 +11,7 @@ public class TimetableDto {
     private LocalTime startTime;
     private LocalTime endTime;
     private Long courseId;
-    private String courseName; // To show "Maths" instead of just ID: 5
+    private String courseName;
+    private Long roomId;
+    private String roomName;
 }
