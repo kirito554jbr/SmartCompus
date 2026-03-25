@@ -1,6 +1,5 @@
 package org.example.smartcompus.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.smartcompus.dto.AuthDto.AuthResponseDto;
 import org.example.smartcompus.dto.AuthDto.LoginRequestDto;
 import org.example.smartcompus.dto.UserDto.UserRequestDto;
@@ -20,12 +19,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +41,6 @@ class AuthControllerTest {
     private AuthController authController;
 
     private User adminUser;
-    private UserDetails adminUserDetails;
 
     @BeforeEach
     void setUp() {
@@ -58,13 +52,6 @@ class AuthControllerTest {
         adminUser.setPassword("encodedPassword");
         adminUser.setRole(UserRole.ROLE_ADMIN);
         adminUser.setEnabeld(true);
-
-        adminUserDetails = new org.springframework.security.core.userdetails.User(
-                "admin@smartcampus.com",
-                "encodedPassword",
-                true, true, true, true,
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"))
-        );
     }
 
     // ===================== Login Success =====================
@@ -75,14 +62,11 @@ class AuthControllerTest {
         // Arrange
         LoginRequestDto loginRequest = new LoginRequestDto("admin@smartcampus.com", "password123");
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(adminUserDetails);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(authentication);
-
-        when(jwtService.generateToken(adminUserDetails)).thenReturn("access-token-123");
-        when(jwtService.generateRefreshToken(adminUserDetails)).thenReturn("refresh-token-456");
+                .thenReturn(mock(org.springframework.security.core.Authentication.class));
         when(userRepository.findByEmail("admin@smartcampus.com")).thenReturn(Optional.of(adminUser));
+        when(jwtService.generateAccessToken(adminUser)).thenReturn("access-token-123");
+        when(jwtService.generateRefreshToken(adminUser)).thenReturn("refresh-token-456");
 
         // Act
         var response = authController.login(loginRequest);
@@ -105,19 +89,17 @@ class AuthControllerTest {
         // Arrange
         LoginRequestDto loginRequest = new LoginRequestDto("admin@smartcampus.com", "password123");
 
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(adminUserDetails);
-        when(authenticationManager.authenticate(any())).thenReturn(authentication);
-        when(jwtService.generateToken(any(UserDetails.class))).thenReturn("access");
-        when(jwtService.generateRefreshToken(any(UserDetails.class))).thenReturn("refresh");
+        when(authenticationManager.authenticate(any())).thenReturn(mock(org.springframework.security.core.Authentication.class));
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(adminUser));
+        when(jwtService.generateAccessToken(any(User.class))).thenReturn("access");
+        when(jwtService.generateRefreshToken(any(User.class))).thenReturn("refresh");
 
         // Act
         authController.login(loginRequest);
 
         // Assert
-        verify(jwtService).generateToken(adminUserDetails);
-        verify(jwtService).generateRefreshToken(adminUserDetails);
+        verify(jwtService).generateAccessToken(adminUser);
+        verify(jwtService).generateRefreshToken(adminUser);
     }
 
     // ===================== Login with invalid credentials =====================
@@ -181,16 +163,9 @@ class AuthControllerTest {
         testUser.setEmail("test@test.com");
         testUser.setRole(UserRole.ROLE_TEACHER);
 
-        UserDetails testUserDetails = new org.springframework.security.core.userdetails.User(
-                "test@test.com", "encoded", true, true, true, true,
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_TEACHER"))
-        );
-
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(testUserDetails);
-        when(authenticationManager.authenticate(any())).thenReturn(authentication);
-        when(jwtService.generateToken(any(UserDetails.class))).thenReturn("token");
-        when(jwtService.generateRefreshToken(any(UserDetails.class))).thenReturn("refresh");
+        when(authenticationManager.authenticate(any())).thenReturn(mock(org.springframework.security.core.Authentication.class));
+        when(jwtService.generateAccessToken(any(User.class))).thenReturn("token");
+        when(jwtService.generateRefreshToken(any(User.class))).thenReturn("refresh");
         when(userRepository.findByEmail("test@test.com")).thenReturn(Optional.of(testUser));
 
         // Act
@@ -218,16 +193,9 @@ class AuthControllerTest {
         teacherUser.setEmail("teacher@test.com");
         teacherUser.setRole(UserRole.ROLE_TEACHER);
 
-        UserDetails teacherDetails = new org.springframework.security.core.userdetails.User(
-                "teacher@test.com", "encoded", true, true, true, true,
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_TEACHER"))
-        );
-
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(teacherDetails);
-        when(authenticationManager.authenticate(any())).thenReturn(authentication);
-        when(jwtService.generateToken(any(UserDetails.class))).thenReturn("t");
-        when(jwtService.generateRefreshToken(any(UserDetails.class))).thenReturn("r");
+        when(authenticationManager.authenticate(any())).thenReturn(mock(org.springframework.security.core.Authentication.class));
+        when(jwtService.generateAccessToken(any(User.class))).thenReturn("t");
+        when(jwtService.generateRefreshToken(any(User.class))).thenReturn("r");
         when(userRepository.findByEmail("teacher@test.com")).thenReturn(Optional.of(teacherUser));
 
         // Act
