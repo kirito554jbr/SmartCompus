@@ -3,6 +3,7 @@ package org.example.smartcompus.service;
 import org.example.smartcompus.Mappers.CourseMapper;
 import org.example.smartcompus.dto.CourseDto.CourseDto;
 import org.example.smartcompus.model.Course;
+import org.example.smartcompus.model.Major;
 import org.example.smartcompus.model.Student;
 import org.example.smartcompus.model.Teacher;
 import org.example.smartcompus.model.enums.UserRole;
@@ -51,13 +52,16 @@ class CourseServiceTest {
         teacher.setEmployeeNumber("EMP001");
         teacher.setSpeciality("Mathematics");
 
+        Major major = new Major();
+        major.setName("Computer Science");
+
         student = new Student();
         student.setIdUser(2L);
         student.setFirstName("John");
         student.setLastName("Doe");
         student.setRole(UserRole.ROLE_STUDENT);
         student.setStudentNumber("STU001");
-        student.setMajor("Computer Science");
+        student.setMajor(major);
         student.setCourses(new ArrayList<>());
 
         course = new Course();
@@ -145,7 +149,8 @@ class CourseServiceTest {
             expectedDto.setName("Calculus");
             expectedDto.setCode("MATH101");
             expectedDto.setTeacherId(1L);
-            expectedDto.setTeacherFullName("Jane Smith");
+            expectedDto.setTeacherFirstName("Jane");
+            expectedDto.setTeacherLastName("Smith");
 
             when(courseRepository.findById(10L)).thenReturn(Optional.of(course));
             when(teacherRepository.findById(1L)).thenReturn(Optional.of(teacher));
@@ -165,7 +170,8 @@ class CourseServiceTest {
             // Assert
             assertThat(result).isNotNull();
             assertThat(result.getTeacherId()).isEqualTo(1L);
-            assertThat(result.getTeacherFullName()).isEqualTo("Jane Smith");
+            assertThat(result.getTeacherFirstName()).isEqualTo("Jane");
+            assertThat(result.getTeacherLastName()).isEqualTo("Smith");
             verify(courseRepository).save(course);
         }
 

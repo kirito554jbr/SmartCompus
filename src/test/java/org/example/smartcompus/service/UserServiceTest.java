@@ -9,10 +9,12 @@ import org.example.smartcompus.dto.TeacherDto.TeacherRequestDto;
 import org.example.smartcompus.dto.TeacherDto.TeacherResponseDto;
 import org.example.smartcompus.dto.UserDto.UserRequestDto;
 import org.example.smartcompus.dto.UserDto.UserResponseDto;
+import org.example.smartcompus.model.Major;
 import org.example.smartcompus.model.Student;
 import org.example.smartcompus.model.Teacher;
 import org.example.smartcompus.model.User;
 import org.example.smartcompus.model.enums.UserRole;
+import org.example.smartcompus.repository.MajorRepository;
 import org.example.smartcompus.repository.StudentRepository;
 import org.example.smartcompus.repository.TeacherRepository;
 import org.example.smartcompus.repository.UserRepository;
@@ -23,6 +25,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.time.Year;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,6 +40,7 @@ class UserServiceTest {
     @Mock private UserRepository userRepository;
     @Mock private StudentRepository studentRepository;
     @Mock private TeacherRepository teacherRepository;
+    @Mock private MajorRepository majorRepository;
     @Mock private UserMapper userMapper;
     @Mock private StudentMapper studentMapper;
     @Mock private TeacherMapper teacherMapper;
@@ -99,8 +105,11 @@ class UserServiceTest {
     // ===================== Register Student =====================
 
     @Test
-    @DisplayName("Register student - should save Student and return StudentResponseDto")
+    @DisplayName("Register student - should save Student with generated number and major")
     void registerUser_StudentRole_ShouldReturnStudentResponseDto() {
+        int currentYear = Year.now().getValue();
+        String expectedStudentNumber = String.format("STU-%d-%03d", currentYear, 1);
+
         // Arrange
         StudentRequestDto requestDto = new StudentRequestDto();
         requestDto.setFirstName("John");
@@ -108,7 +117,6 @@ class UserServiceTest {
         requestDto.setEmail("john.doe@student.com");
         requestDto.setPassword("studentPass");
         requestDto.setRole(UserRole.ROLE_STUDENT);
-        requestDto.setStudentNumber("STU001");
         requestDto.setMajor("Computer Science");
 
         Student studentEntity = new Student();
@@ -117,8 +125,10 @@ class UserServiceTest {
         studentEntity.setEmail("john.doe@student.com");
         studentEntity.setPassword("studentPass");
         studentEntity.setRole(UserRole.ROLE_STUDENT);
-        studentEntity.setStudentNumber("STU001");
-        studentEntity.setMajor("Computer Science");
+
+        Major major = new Major();
+        major.setIdMajor(11L);
+        major.setName("Computer Science");
 
         Student savedStudent = new Student();
         savedStudent.setIdUser(2L);
@@ -127,8 +137,8 @@ class UserServiceTest {
         savedStudent.setEmail("john.doe@student.com");
         savedStudent.setPassword("encodedPassword");
         savedStudent.setRole(UserRole.ROLE_STUDENT);
-        savedStudent.setStudentNumber("STU001");
-        savedStudent.setMajor("Computer Science");
+        savedStudent.setStudentNumber(expectedStudentNumber);
+        savedStudent.setMajor(major);
         savedStudent.setEnabeld(true);
 
         StudentResponseDto responseDto = new StudentResponseDto();
@@ -137,10 +147,12 @@ class UserServiceTest {
         responseDto.setLastName("Doe");
         responseDto.setEmail("john.doe@student.com");
         responseDto.setRole(UserRole.ROLE_STUDENT);
-        responseDto.setStudentNumber("STU001");
+        responseDto.setStudentNumber(expectedStudentNumber);
         responseDto.setMajor("Computer Science");
 
         when(studentMapper.toEntityRequest(requestDto)).thenReturn(studentEntity);
+        when(studentRepository.count()).thenReturn(0L);
+        when(majorRepository.findByNameIgnoreCase("Computer Science")).thenReturn(Optional.of(major));
         when(passwordEncoder.encode("studentPass")).thenReturn("encodedPassword");
         when(studentRepository.save(any(Student.class))).thenReturn(savedStudent);
         when(studentMapper.toDto(savedStudent)).thenReturn(responseDto);
@@ -154,16 +166,24 @@ class UserServiceTest {
         assertThat(result.getIdUser()).isEqualTo(2L);
         assertThat(result.getEmail()).isEqualTo("john.doe@student.com");
         assertThat(result.getRole()).isEqualTo(UserRole.ROLE_STUDENT);
-        assertThat(((StudentResponseDto) result).getStudentNumber()).isEqualTo("STU001");
-        verify(studentRepository).save(any(Student.class));
+        assertThat(((StudentResponseDto) result).getStudentNumber()).isEqualTo(expectedStudentNumber);
+        verify(majorRepository).findByNameIgnoreCase("Computer Science");
+        verify(majorRepository, never()).save(any(Major.class));
+        verify(studentRepository).save(argThat(student ->
+                expectedStudentNumber.equals(student.getStudentNumber())
+                        && student.getMajor() != null
+                        && "Computer Science".equals(student.getMajor().getName())));
         verify(userRepository, never()).save(any());
     }
 
     // ===================== Register Teacher =====================
 
     @Test
-    @DisplayName("Register teacher - should save Teacher and return TeacherResponseDto")
+    @DisplayName("Register teacher - should save Teacher with generated employee number")
     void registerUser_TeacherRole_ShouldReturnTeacherResponseDto() {
+        int currentYear = Year.now().getValue();
+        String expectedEmployeeNumber = String.format("EMP-%d-%03d", currentYear, 1);
+
         // Arrange
         TeacherRequestDto requestDto = new TeacherRequestDto();
         requestDto.setFirstName("Jane");
@@ -171,7 +191,6 @@ class UserServiceTest {
         requestDto.setEmail("jane.smith@teacher.com");
         requestDto.setPassword("teacherPass");
         requestDto.setRole(UserRole.ROLE_TEACHER);
-        requestDto.setEmployeeNumber("EMP001");
         requestDto.setSpeciality("Mathematics");
 
         Teacher teacherEntity = new Teacher();
@@ -180,7 +199,6 @@ class UserServiceTest {
         teacherEntity.setEmail("jane.smith@teacher.com");
         teacherEntity.setPassword("teacherPass");
         teacherEntity.setRole(UserRole.ROLE_TEACHER);
-        teacherEntity.setEmployeeNumber("EMP001");
         teacherEntity.setSpeciality("Mathematics");
 
         Teacher savedTeacher = new Teacher();
@@ -190,7 +208,7 @@ class UserServiceTest {
         savedTeacher.setEmail("jane.smith@teacher.com");
         savedTeacher.setPassword("encodedPassword");
         savedTeacher.setRole(UserRole.ROLE_TEACHER);
-        savedTeacher.setEmployeeNumber("EMP001");
+        savedTeacher.setEmployeeNumber(expectedEmployeeNumber);
         savedTeacher.setSpeciality("Mathematics");
         savedTeacher.setEnabeld(true);
 
@@ -200,10 +218,11 @@ class UserServiceTest {
         responseDto.setLastName("Smith");
         responseDto.setEmail("jane.smith@teacher.com");
         responseDto.setRole(UserRole.ROLE_TEACHER);
-        responseDto.setEmployeeNumber("EMP001");
+        responseDto.setEmployeeNumber(expectedEmployeeNumber);
         responseDto.setSpeciality("Mathematics");
 
         when(teacherMapper.toEntityRequest(requestDto)).thenReturn(teacherEntity);
+        when(teacherRepository.count()).thenReturn(0L);
         when(passwordEncoder.encode("teacherPass")).thenReturn("encodedPassword");
         when(teacherRepository.save(any(Teacher.class))).thenReturn(savedTeacher);
         when(teacherMapper.toDto(savedTeacher)).thenReturn(responseDto);
@@ -216,8 +235,8 @@ class UserServiceTest {
         assertThat(result).isInstanceOf(TeacherResponseDto.class);
         assertThat(result.getIdUser()).isEqualTo(3L);
         assertThat(result.getRole()).isEqualTo(UserRole.ROLE_TEACHER);
-        assertThat(((TeacherResponseDto) result).getEmployeeNumber()).isEqualTo("EMP001");
-        verify(teacherRepository).save(any(Teacher.class));
+        assertThat(((TeacherResponseDto) result).getEmployeeNumber()).isEqualTo(expectedEmployeeNumber);
+        verify(teacherRepository).save(argThat(teacher -> expectedEmployeeNumber.equals(teacher.getEmployeeNumber())));
         verify(userRepository, never()).save(any());
     }
 
@@ -295,4 +314,3 @@ class UserServiceTest {
         verify(userRepository).save(argThat(User::isEnabeld));
     }
 }
-

@@ -6,13 +6,17 @@ import org.example.smartcompus.Mappers.TeacherMapper;
 import org.example.smartcompus.Mappers.UserMapper;
 import org.example.smartcompus.dto.StudentDto.StudentRequestDto;
 import org.example.smartcompus.dto.TeacherDto.TeacherRequestDto;
+import org.example.smartcompus.dto.UserDto.ChangePasswordRequestDto;
 import org.example.smartcompus.dto.UserDto.UserRequestDto;
 import org.example.smartcompus.dto.UserDto.UserResponseDto;
 import org.example.smartcompus.exceptions.UserNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
+import org.example.smartcompus.model.Major;
 import org.example.smartcompus.model.Student;
 import org.example.smartcompus.model.Teacher;
 import org.example.smartcompus.model.User;
 import org.example.smartcompus.model.enums.UserRole;
+import org.example.smartcompus.repository.MajorRepository;
 import org.example.smartcompus.repository.StudentRepository;
 import org.example.smartcompus.repository.TeacherRepository;
 import org.example.smartcompus.repository.UserRepository;
@@ -21,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Year;
 import java.util.List;
 @Service
 @RequiredArgsConstructor
@@ -29,6 +34,7 @@ public class UserService implements IUserService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
+    private final MajorRepository majorRepository;
     private final UserMapper userMapper;
     private final StudentMapper studentMapper;
     private final TeacherMapper teacherMapper;
@@ -66,23 +72,45 @@ public class UserService implements IUserService {
     }
 
     public UserResponseDto registerUser(UserRequestDto userDto) {
+        int currentYear = Year.now().getValue();
+
         if (userDto.getRole() == UserRole.ROLE_STUDENT && userDto instanceof StudentRequestDto studentDto) {
             Student student = studentMapper.toEntityRequest(studentDto);
-            student.setPassword(passwordEncoder.encode(student.getPassword()));
+
+            long studentCount = studentRepository.count() + 1;
+            String generatedId = String.format("STU-%d-%03d", currentYear, studentCount);
+            student.setStudentNumber(generatedId);
+
+            if (studentDto.getMajor() != null && !studentDto.getMajor().isBlank()) {
+                String normalizedMajor = studentDto.getMajor().trim();
+                Major major = majorRepository.findByNameIgnoreCase(normalizedMajor)
+                        .orElseGet(() -> {
+                            Major newMajor = new Major();
+                            newMajor.setName(normalizedMajor);
+                            return majorRepository.save(newMajor);
+                        });
+                student.setMajor(major);
+            }
+
+            student.setPassword(passwordEncoder.encode(studentDto.getPassword()));
             student.setEnabeld(true);
             return studentMapper.toDto(studentRepository.save(student));
         }
 
         if (userDto.getRole() == UserRole.ROLE_TEACHER && userDto instanceof TeacherRequestDto teacherDto) {
             Teacher teacher = teacherMapper.toEntityRequest(teacherDto);
-            teacher.setPassword(passwordEncoder.encode(teacher.getPassword()));
+
+            long teacherCount = teacherRepository.count() + 1;
+            String generatedId = String.format("EMP-%d-%03d", currentYear, teacherCount);
+            teacher.setEmployeeNumber(generatedId);
+
+            teacher.setPassword(passwordEncoder.encode(teacherDto.getPassword()));
             teacher.setEnabeld(true);
             return teacherMapper.toDto(teacherRepository.save(teacher));
         }
 
-        // ROLE_ADMIN or ROLE_ADMIN_STAFF
         User user = userMapper.toEntityRequest(userDto);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEnabeld(true);
         return userMapper.toDto(userRepository.save(user));
     }
@@ -101,12 +129,18 @@ public class UserService implements IUserService {
         return userMapper.toDto(userRepository.save(existingUser));
     }
 
+
     @Override
-    public void changePassword(Long id, String newPassword) {
+    public void changePassword(Long id, ChangePasswordRequestDto request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user); // Explicit save is safer
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new AccessDeniedException("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
-    //done
+
 }

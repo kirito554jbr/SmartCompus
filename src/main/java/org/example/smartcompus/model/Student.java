@@ -12,7 +12,10 @@ import java.util.List;
 @DiscriminatorValue("STUDENT")
 public class Student extends  User {
     private String studentNumber;
-    private String major;
+
+    @ManyToOne
+    @JoinColumn(name = "major_id")
+    private Major major;
 
     @ManyToMany
     @JoinTable(

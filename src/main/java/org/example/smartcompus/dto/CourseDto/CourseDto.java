@@ -8,5 +8,6 @@ public class CourseDto {
     private String name;
     private String code;
     private Long teacherId;
-    private String teacherFullName; // Useful for Angular display
+    private String teacherFirstName;
+    private String teacherLastName;
 }

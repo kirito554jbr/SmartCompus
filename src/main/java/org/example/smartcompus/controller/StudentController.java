@@ -1,6 +1,7 @@
 package org.example.smartcompus.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.smartcompus.dto.StudentDto.StudentRequestDto;
 import org.example.smartcompus.dto.StudentDto.StudentResponseDto;
 import org.example.smartcompus.service.interfaces.IStudentService;
 import org.springframework.http.ResponseEntity;
@@ -24,5 +25,16 @@ public class StudentController {
     public ResponseEntity<List<StudentResponseDto>> getStudentsByMajor(@PathVariable String major) {
         return ResponseEntity.ok(studentService.getStudentsByMajor(major));
     }
-}
 
+    @PutMapping("/number/{studentNumber}/major")
+    public ResponseEntity<StudentResponseDto> updateStudentMajor(
+            @PathVariable String studentNumber,
+            @RequestBody StudentRequestDto studentRequestDto) {
+        return ResponseEntity.ok(studentService.updateStudentMajor(studentNumber, studentRequestDto));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<StudentResponseDto>> getAllStudents() {
+        return ResponseEntity.ok(studentService.getAllStudents());
+    }
+}

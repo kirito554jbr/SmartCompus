@@ -24,5 +24,10 @@ public class TeacherController {
     public ResponseEntity<List<TeacherResponseDto>> getTeachersBySpeciality(@PathVariable String speciality) {
         return ResponseEntity.ok(teacherService.getTeachersBySpeciality(speciality));
     }
+
+    @GetMapping
+    public ResponseEntity<List<TeacherResponseDto>> getAllTeachers() {
+        return ResponseEntity.ok(teacherService.getAllTeachers());
+    }
 }
 

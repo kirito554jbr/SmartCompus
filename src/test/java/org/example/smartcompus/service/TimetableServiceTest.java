@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Optional;
 
@@ -42,6 +43,7 @@ class TimetableServiceTest {
     private Course course;
     private Room room;
     private TimetableDto inputDto;
+    private LocalDate scheduleDate;
 
     @BeforeEach
     void setUp() {
@@ -62,8 +64,11 @@ class TimetableServiceTest {
         room.setCapacity(30);
         room.setType("PRACTICAL");
 
+        scheduleDate = LocalDate.now().plusDays(1);
+
         inputDto = new TimetableDto();
         inputDto.setDay("Monday");
+        inputDto.setDate(scheduleDate);
         inputDto.setStartTime(LocalTime.of(9, 0));
         inputDto.setEndTime(LocalTime.of(11, 0));
         inputDto.setCourseId(10L);
@@ -78,12 +83,14 @@ class TimetableServiceTest {
         // Arrange
         Timetable timetableEntity = new Timetable();
         timetableEntity.setDay("Monday");
+        timetableEntity.setDate(scheduleDate);
         timetableEntity.setStartTime(LocalTime.of(9, 0));
         timetableEntity.setEndTime(LocalTime.of(11, 0));
 
         Timetable savedTimetable = new Timetable();
         savedTimetable.setIdTimetable(1L);
         savedTimetable.setDay("Monday");
+        savedTimetable.setDate(scheduleDate);
         savedTimetable.setStartTime(LocalTime.of(9, 0));
         savedTimetable.setEndTime(LocalTime.of(11, 0));
         savedTimetable.setCourse(course);
@@ -92,6 +99,7 @@ class TimetableServiceTest {
         TimetableDto expectedDto = new TimetableDto();
         expectedDto.setId(1L);
         expectedDto.setDay("Monday");
+        expectedDto.setDate(scheduleDate);
         expectedDto.setStartTime(LocalTime.of(9, 0));
         expectedDto.setEndTime(LocalTime.of(11, 0));
         expectedDto.setCourseId(10L);
@@ -101,7 +109,7 @@ class TimetableServiceTest {
 
         when(courseRepository.findById(10L)).thenReturn(Optional.of(course));
         when(roomRepository.findById(5L)).thenReturn(Optional.of(room));
-        when(timetableRepository.existsOverlap(eq(5L), eq("Monday"), any(), any())).thenReturn(false);
+        when(timetableRepository.existsOverlap(eq(5L), eq(scheduleDate), eq("Monday"), any(), any())).thenReturn(false);
         when(timetableMapper.toEntity(inputDto)).thenReturn(timetableEntity);
         when(timetableRepository.save(timetableEntity)).thenReturn(savedTimetable);
         when(timetableMapper.toDto(savedTimetable)).thenReturn(expectedDto);
@@ -129,7 +137,7 @@ class TimetableServiceTest {
 
         when(courseRepository.findById(10L)).thenReturn(Optional.of(course));
         when(roomRepository.findById(5L)).thenReturn(Optional.of(room));
-        when(timetableRepository.existsOverlap(eq(5L), eq("Monday"), any(), any())).thenReturn(false);
+        when(timetableRepository.existsOverlap(eq(5L), eq(scheduleDate), eq("Monday"), any(), any())).thenReturn(false);
         when(timetableMapper.toEntity(inputDto)).thenReturn(timetableEntity);
 
         Timetable savedTimetable = new Timetable();
@@ -184,7 +192,7 @@ class TimetableServiceTest {
         // Arrange
         when(courseRepository.findById(10L)).thenReturn(Optional.of(course));
         when(roomRepository.findById(5L)).thenReturn(Optional.of(room));
-        when(timetableRepository.existsOverlap(eq(5L), eq("Monday"),
+        when(timetableRepository.existsOverlap(eq(5L), eq(scheduleDate), eq("Monday"),
                 eq(LocalTime.of(9, 0)), eq(LocalTime.of(11, 0)))).thenReturn(true);
 
         // Act & Assert
@@ -199,12 +207,12 @@ class TimetableServiceTest {
     @DisplayName("isRoomAvailable - no overlap should return true")
     void isRoomAvailable_NoOverlap_ShouldReturnTrue() {
         // Arrange
-        when(timetableRepository.existsOverlap(5L, "Monday",
-                LocalTime.of(9, 0), LocalTime.of(11, 0))).thenReturn(false);
+        when(timetableRepository.existsOverlap(5L, scheduleDate,
+                "Monday", LocalTime.of(9, 0), LocalTime.of(11, 0))).thenReturn(false);
 
         // Act
-        boolean available = timetableService.isRoomAvailable(5L, "Monday",
-                LocalTime.of(9, 0), LocalTime.of(11, 0));
+        boolean available = timetableService.isRoomAvailable(5L, scheduleDate,
+                "Monday", LocalTime.of(9, 0), LocalTime.of(11, 0));
 
         // Assert
         assertThat(available).isTrue();
@@ -214,12 +222,12 @@ class TimetableServiceTest {
     @DisplayName("isRoomAvailable - overlap exists should return false")
     void isRoomAvailable_OverlapExists_ShouldReturnFalse() {
         // Arrange
-        when(timetableRepository.existsOverlap(5L, "Monday",
-                LocalTime.of(9, 0), LocalTime.of(11, 0))).thenReturn(true);
+        when(timetableRepository.existsOverlap(5L, scheduleDate,
+                "Monday", LocalTime.of(9, 0), LocalTime.of(11, 0))).thenReturn(true);
 
         // Act
-        boolean available = timetableService.isRoomAvailable(5L, "Monday",
-                LocalTime.of(9, 0), LocalTime.of(11, 0));
+        boolean available = timetableService.isRoomAvailable(5L, scheduleDate,
+                "Monday", LocalTime.of(9, 0), LocalTime.of(11, 0));
 
         // Assert
         assertThat(available).isFalse();
@@ -238,7 +246,7 @@ class TimetableServiceTest {
 
         when(courseRepository.findById(10L)).thenReturn(Optional.of(course));
         when(roomRepository.findById(5L)).thenReturn(Optional.of(room));
-        when(timetableRepository.existsOverlap(eq(5L), eq("Monday"), any(), any())).thenReturn(false);
+        when(timetableRepository.existsOverlap(eq(5L), eq(scheduleDate), eq("Monday"), any(), any())).thenReturn(false);
         when(timetableMapper.toEntity(inputDto)).thenReturn(entity);
         when(timetableRepository.save(entity)).thenReturn(saved);
         when(timetableMapper.toDto(saved)).thenReturn(new TimetableDto());
@@ -249,5 +257,14 @@ class TimetableServiceTest {
         // Assert
         verify(timetableRepository).save(any(Timetable.class));
     }
-}
 
+    @Test
+    @DisplayName("Create timetable - non-future date should throw IllegalArgumentException")
+    void createSchedule_DateNotAfterToday_ShouldThrowIllegalArgumentException() {
+        inputDto.setDate(LocalDate.now());
+
+        assertThatThrownBy(() -> timetableService.createSchedule(inputDto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("after insertion date");
+    }
+}

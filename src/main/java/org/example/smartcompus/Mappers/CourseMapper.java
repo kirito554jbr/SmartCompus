@@ -7,8 +7,10 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface CourseMapper {
-//    @Mapping(source = "teacher.idUser", target = "teacherId")
-//    @Mapping(target = "teacherFullName", expression = "java(course.getTeacher() != null ? course.getTeacher().getFirstName() + \" \" + course.getTeacher().getLastName() : null)")
+    @Mapping(source = "idCourse", target = "id")
+    @Mapping(source = "teacher.idUser", target = "teacherId")
+    @Mapping(source = "teacher.firstName", target = "teacherFirstName")
+    @Mapping(source = "teacher.lastName", target = "teacherLastName")
     CourseDto toDto(Course course);
 
     @Mapping(target = "teacher", ignore = true)

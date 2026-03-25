@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -22,6 +23,11 @@ public class TimetableController {
     @PostMapping
     public ResponseEntity<TimetableDto> createSchedule(@Valid @RequestBody TimetableDto dto) {
         return new ResponseEntity<>(timetableService.createSchedule(dto), HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TimetableDto>> getAllTimetables() {
+        return ResponseEntity.ok(timetableService.getAllTimetables());
     }
 
     @GetMapping("/{id}")
@@ -42,10 +48,11 @@ public class TimetableController {
     @GetMapping("/room-availability")
     public ResponseEntity<Boolean> checkRoomAvailability(
             @RequestParam Long roomId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam String day,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime endTime) {
-        return ResponseEntity.ok(timetableService.isRoomAvailable(roomId, day, startTime, endTime));
+        return ResponseEntity.ok(timetableService.isRoomAvailable(roomId, date, day, startTime, endTime));
     }
 
     @DeleteMapping("/{id}")

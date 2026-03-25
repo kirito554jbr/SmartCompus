@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -20,10 +21,12 @@ public interface TimetableRepository extends JpaRepository<Timetable, Long> {
 
     @Query("SELECT COUNT(t) > 0 FROM Timetable t " +
             "WHERE t.room.id = :roomId " +
+            "AND t.date = :date " +
             "AND t.day = :day " +
             "AND t.startTime < :endTime " +
             "AND t.endTime > :startTime")
     boolean existsOverlap(@Param("roomId") Long roomId,
+                          @Param("date") LocalDate date,
                           @Param("day") String day,
                           @Param("startTime") LocalTime startTime,
                           @Param("endTime") LocalTime endTime);

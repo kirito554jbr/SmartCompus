@@ -7,5 +7,6 @@ import java.util.List;
 public interface ITeacherService {
     TeacherResponseDto getTeacherByEmployeeNumber(String employeeNumber);
     List<TeacherResponseDto> getTeachersBySpeciality(String speciality);
+    List<TeacherResponseDto> getAllTeachers();
 }
 

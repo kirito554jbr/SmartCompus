@@ -3,6 +3,7 @@ package org.example.smartcompus.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Data
@@ -15,6 +16,7 @@ public class Timetable {
     private String day;
     private LocalTime startTime;
     private LocalTime endTime;
+    private LocalDate date;
 
     @ManyToOne @JoinColumn(name = "course_id")
     private Course course;

@@ -32,4 +32,11 @@ public class TeacherService implements ITeacherService {
                 .map(teacherMapper::toDto)
                 .toList();
     }
+
+    @Override
+    public List<TeacherResponseDto> getAllTeachers() {
+        return teacherRepository.findAll().stream()
+                .map(teacherMapper::toDto)
+                .toList();
+    }
 }

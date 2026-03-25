@@ -2,6 +2,7 @@ package org.example.smartcompus.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.smartcompus.dto.UserDto.ChangePasswordRequestDto;
 import org.example.smartcompus.dto.UserDto.UserRequestDto;
 import org.example.smartcompus.dto.UserDto.UserResponseDto;
 import org.example.smartcompus.model.enums.UserRole;
@@ -56,8 +57,8 @@ public class UserController {
     @PatchMapping("/{id}/password")
     public ResponseEntity<Void> changePassword(
             @PathVariable Long id,
-            @RequestBody String newPassword) {
-        userService.changePassword(id, newPassword);
+            @Valid @RequestBody ChangePasswordRequestDto request) {
+        userService.changePassword(id, request);
         return ResponseEntity.ok().build();
     }
 }

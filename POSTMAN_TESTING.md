@@ -340,6 +340,7 @@ POST http://localhost:8080/api/timetables
 ```
 ```json
 {
+  "date": "2026-05-23",
   "day": "MONDAY",
   "startTime": "09:00:00",
   "endTime": "11:00:00",
@@ -348,6 +349,7 @@ POST http://localhost:8080/api/timetables
 }
 ```
 > Day values: `MONDAY`, `TUESDAY`, `WEDNESDAY`, `THURSDAY`, `FRIDAY`, `SATURDAY`, `SUNDAY`
+> Date format: `yyyy-MM-dd`
 
 ### Create Another Timetable Entry
 ```
@@ -355,6 +357,7 @@ POST http://localhost:8080/api/timetables
 ```
 ```json
 {
+  "date": "2026-05-28",
   "day": "WEDNESDAY",
   "startTime": "14:00:00",
   "endTime": "16:00:00",
@@ -380,7 +383,7 @@ GET http://localhost:8080/api/timetables/teacher/3
 
 ### Check Room Availability
 ```
-GET http://localhost:8080/api/timetables/room-availability?roomId=1&day=MONDAY&startTime=09:00:00&endTime=11:00:00
+GET http://localhost:8080/api/timetables/room-availability?roomId=1&date=2026-05-23&day=MONDAY&startTime=09:00:00&endTime=11:00:00
 ```
 
 ### Delete Timetable

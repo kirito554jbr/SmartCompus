@@ -15,6 +15,7 @@ import org.example.smartcompus.service.interfaces.ITimetableService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -30,13 +31,21 @@ public class TimetableService implements ITimetableService {
 
     @Override
     public TimetableDto createSchedule(TimetableDto dto) {
+        LocalDate today = LocalDate.now();
+        if (dto.getDate() == null) {
+            throw new IllegalArgumentException("Date is required");
+        }
+        if (!dto.getDate().isAfter(today)) {
+            throw new IllegalArgumentException("Timetable date must be after insertion date");
+        }
+
         Course course = courseRepository.findById(dto.getCourseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
         Room room = roomRepository.findById(dto.getRoomId())
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
 
-        if (!isRoomAvailable(dto.getRoomId(), dto.getDay(), dto.getStartTime(), dto.getEndTime())) {
+        if (!isRoomAvailable(dto.getRoomId(), dto.getDate(), dto.getDay(), dto.getStartTime(), dto.getEndTime())) {
             throw new ConflictException("Room is already occupied at this time");
         }
 
@@ -44,6 +53,14 @@ public class TimetableService implements ITimetableService {
         timetable.setCourse(course);
         timetable.setRoom(room);
         return timetableMapper.toDto(timetableRepository.save(timetable));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TimetableDto> getAllTimetables() {
+        return timetableRepository.findAll().stream()
+                .map(timetableMapper::toDto)
+                .toList();
     }
 
     @Override
@@ -65,9 +82,9 @@ public class TimetableService implements ITimetableService {
     }
 
     @Override
-    public boolean isRoomAvailable(Long roomId, String day, LocalTime start, LocalTime end) {
+    public boolean isRoomAvailable(Long roomId, LocalDate date, String day, LocalTime start, LocalTime end) {
         // Query repository to see if any timetable entry overlaps
-        return !timetableRepository.existsOverlap(roomId, day, start, end);
+        return !timetableRepository.existsOverlap(roomId, date, day, start, end);
     }
 
     @Override
