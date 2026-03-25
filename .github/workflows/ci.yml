@@ -9,24 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_DB: smartcompus
-          POSTGRES_USER: smartcompus
-          POSTGRES_PASSWORD: smartcompus123
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -34,7 +19,7 @@ jobs:
       run: chmod +x ./mvnw
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
@@ -46,15 +31,18 @@ jobs:
     - name: Run tests with Maven
       run: ./mvnw clean verify -B
       env:
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/smartcompus
-        SPRING_DATASOURCE_USERNAME: smartcompus
-        SPRING_DATASOURCE_PASSWORD: smartcompus123
+        SPRING_PROFILES_ACTIVE: test
+        SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;NON_KEYWORDS=DAY
+        SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
+        SPRING_DATASOURCE_USERNAME: sa
+        SPRING_DATASOURCE_PASSWORD: ''
         SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
 
     - name: Build with Maven
       run: ./mvnw clean package -DskipTests -B
 
     - name: Build Docker and Push Image
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: mr-smithers-excellent/docker-build-push@v6
       with:
         image: aymenjebrane/smartCompus
