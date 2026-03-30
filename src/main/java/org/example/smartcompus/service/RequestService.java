@@ -24,7 +24,6 @@ public class RequestService implements IRequestService {
     @Override
     public RequestDto submitRequest(RequestDto dto) {
         Request request = requestMapper.toEntity(dto);
-        // Default status for new requests
         request.setStatus(RequestStatus.PENDING);
         request.setCreatedAt(LocalDateTime.now());
 
@@ -33,7 +32,7 @@ public class RequestService implements IRequestService {
     }
 
     @Override
-    @Transactional // Ensures the update is atomic
+    @Transactional
     public RequestDto updateRequestStatus(Long requestId, RequestStatus status) {
         Request request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found with id: " + requestId));

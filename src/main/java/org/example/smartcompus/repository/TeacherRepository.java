@@ -9,7 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface TeacherRepository extends JpaRepository<Teacher, Long> {
-    // Find teachers by their specific speciality
     List<Teacher> findBySpeciality(String speciality);
 
     Optional<Teacher> findTeacherByEmployeeNumber(String employeeNumber);

@@ -10,8 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Long> {
-    // Find student by their unique student number
     Optional<Student> findByStudentNumber(String studentNumber);
 
     List<Student> findStudentsByMajor(Major major);
+
+    boolean existsByMajor_IdMajor(Long majorId);
 }

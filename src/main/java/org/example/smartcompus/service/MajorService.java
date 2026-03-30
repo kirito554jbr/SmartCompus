@@ -7,6 +7,7 @@ import org.example.smartcompus.exceptions.ConflictException;
 import org.example.smartcompus.exceptions.ResourceNotFoundException;
 import org.example.smartcompus.model.Major;
 import org.example.smartcompus.repository.MajorRepository;
+import org.example.smartcompus.repository.StudentRepository;
 import org.example.smartcompus.service.interfaces.IMajorService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import java.util.List;
 @Transactional
 public class MajorService implements IMajorService {
     private final MajorRepository majorRepository;
+    private final StudentRepository studentRepository;
     private final MajorMapper majorMapper;
 
     @Override
@@ -72,6 +74,11 @@ public class MajorService implements IMajorService {
         if (!majorRepository.existsById(id)) {
             throw new ResourceNotFoundException("Cannot delete: Major " + id + " not found");
         }
+
+        if (studentRepository.existsByMajor_IdMajor(id)) {
+            throw new ConflictException("Cannot delete: Major " + id + " has assigned students");
+        }
+
         majorRepository.deleteById(id);
     }
 

@@ -21,6 +21,9 @@ import org.example.smartcompus.repository.StudentRepository;
 import org.example.smartcompus.repository.TeacherRepository;
 import org.example.smartcompus.repository.UserRepository;
 import org.example.smartcompus.service.interfaces.IUserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +65,16 @@ public class UserService implements IUserService {
         return userRepository.findAll().stream()
                 .map(userMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    public Page<UserResponseDto> getUsersPaginated(int page, int size, String sortBy, String sortDirection) {
+        Sort sort = "desc".equalsIgnoreCase(sortDirection)
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        return userRepository.findAll(PageRequest.of(page, size, sort))
+                .map(userMapper::toDto);
     }
 
     @Override

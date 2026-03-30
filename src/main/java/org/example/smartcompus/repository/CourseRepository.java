@@ -8,7 +8,6 @@ import java.util.List;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
-    // Find all courses taught by a specific teacher
     List<Course> findByTeacher_IdUser(Long teacherId);
 }
 

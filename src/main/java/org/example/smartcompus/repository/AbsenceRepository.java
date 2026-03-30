@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface AbsenceRepository extends JpaRepository<Absence, Long> {
-    // Track absences for a student
     List<Absence> findByStudent_IdUser(Long studentId);
 }

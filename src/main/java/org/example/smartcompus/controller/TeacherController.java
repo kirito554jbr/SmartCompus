@@ -3,6 +3,7 @@ package org.example.smartcompus.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.smartcompus.dto.TeacherDto.TeacherResponseDto;
 import org.example.smartcompus.service.interfaces.ITeacherService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +29,15 @@ public class TeacherController {
     @GetMapping
     public ResponseEntity<List<TeacherResponseDto>> getAllTeachers() {
         return ResponseEntity.ok(teacherService.getAllTeachers());
+    }
+
+    @GetMapping("/paginated")
+    public ResponseEntity<Page<TeacherResponseDto>> getTeachersPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "idUser") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+        return ResponseEntity.ok(teacherService.getTeachersPaginated(page, size, sortBy, sortDirection));
     }
 }
 

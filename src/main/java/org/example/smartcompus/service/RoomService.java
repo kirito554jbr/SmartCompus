@@ -7,6 +7,9 @@ import org.example.smartcompus.exceptions.ResourceNotFoundException;
 import org.example.smartcompus.model.Room;
 import org.example.smartcompus.repository.RoomRepository;
 import org.example.smartcompus.service.interfaces.IRoomService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,16 @@ public class RoomService implements IRoomService {
         return roomRepository.findAll().stream()
                 .map(roomMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    public Page<RoomDto> getRoomsPaginated(int page, int size, String sortBy, String sortDirection) {
+        Sort sort = "desc".equalsIgnoreCase(sortDirection)
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        return roomRepository.findAll(PageRequest.of(page, size, sort))
+                .map(roomMapper::toDto);
     }
 
     @Override

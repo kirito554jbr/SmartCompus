@@ -1,7 +1,9 @@
 package org.example.smartcompus.service;
 
 import org.example.smartcompus.Mappers.CourseMapper;
+import org.example.smartcompus.Mappers.StudentMapper;
 import org.example.smartcompus.dto.CourseDto.CourseDto;
+import org.example.smartcompus.dto.StudentDto.StudentResponseDto;
 import org.example.smartcompus.model.Course;
 import org.example.smartcompus.model.Major;
 import org.example.smartcompus.model.Student;
@@ -20,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,6 +37,7 @@ class CourseServiceTest {
     @Mock private TeacherRepository teacherRepository;
     @Mock private StudentRepository studentRepository;
     @Mock private CourseMapper courseMapper;
+    @Mock private StudentMapper studentMapper;
 
     @InjectMocks
     private CourseService courseService;
@@ -276,6 +280,45 @@ class CourseServiceTest {
 
             // Assert
             verify(studentRepository).save(student);
+        }
+    }
+
+    // ===================== Get Enrolled Students =====================
+
+    @Nested
+    @DisplayName("Get Enrolled Students Tests")
+    class GetEnrolledStudentsTests {
+
+        @Test
+        @DisplayName("Get enrolled students - should return mapped students")
+        void getEnrolledStudents_ShouldReturnMappedStudents() {
+            // Arrange
+            StudentResponseDto studentDto = new StudentResponseDto();
+            studentDto.setStudentNumber("STU001");
+
+            course.setStudents(List.of(student));
+            when(courseRepository.findById(10L)).thenReturn(Optional.of(course));
+            when(studentMapper.toDto(student)).thenReturn(studentDto);
+
+            // Act
+            List<StudentResponseDto> result = courseService.getEnrolledStudents(10L);
+
+            // Assert
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).getStudentNumber()).isEqualTo("STU001");
+            verify(studentMapper).toDto(student);
+        }
+
+        @Test
+        @DisplayName("Get enrolled students - course not found should throw RuntimeException")
+        void getEnrolledStudents_CourseNotFound_ShouldThrow() {
+            // Arrange
+            when(courseRepository.findById(999L)).thenReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> courseService.getEnrolledStudents(999L))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining("Course not found");
         }
     }
 }

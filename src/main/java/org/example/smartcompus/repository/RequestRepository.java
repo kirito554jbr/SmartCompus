@@ -9,10 +9,8 @@ import java.util.List;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
-    // Filter requests by status (e.g., PENDING)
     List<Request> findByStatus(RequestStatus status);
 
-    // Get all requests for a specific student
     List<Request> findByStudent_IdUser(Long studentId);
 }
 

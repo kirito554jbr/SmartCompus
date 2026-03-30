@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.smartcompus.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -47,13 +48,15 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/refresh-token").permitAll()
                 .requestMatchers("/api/users/email").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/users/{id}")
+                    .hasAnyRole("ADMIN", "ADMIN_STAFF", "TEACHER", "STUDENT")
                 .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "ADMIN_STAFF")
                 .requestMatchers("/api/courses/**").hasAnyRole("ADMIN", "TEACHER")
                 .requestMatchers("/api/timetables/student/{studentId}").hasAnyRole("ADMIN", "ADMIN_STAFF", "STUDENT")
                 .requestMatchers("/api/timetables/teacher/{teacherId}").hasAnyRole("ADMIN", "TEACHER")
                 .requestMatchers("/api/timetables/**").hasAnyRole("ADMIN", "ADMIN_STAFF", "TEACHER")
+                .requestMatchers("/api/absences/student/**").hasAnyRole("ADMIN", "ADMIN_STAFF", "TEACHER", "STUDENT")
                 .requestMatchers("/api/absences/**").hasAnyRole("ADMIN", "TEACHER")
-                .requestMatchers("/api/absences/student/**").authenticated()
                 .requestMatchers("/api/students/**").hasAnyRole("ADMIN", "ADMIN_STAFF", "TEACHER")
                 .requestMatchers("/api/teachers/**").hasAnyRole("ADMIN", "ADMIN_STAFF")
                 .requestMatchers("/api/requests/**").authenticated()

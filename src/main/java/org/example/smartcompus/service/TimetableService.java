@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +40,14 @@ public class TimetableService implements ITimetableService {
             throw new IllegalArgumentException("Timetable date must be after insertion date");
         }
 
+        if(Objects.equals(dto.getDay(), "SUNDAY")){
+            throw new IllegalArgumentException("Can't create a timetable in Sunday");
+        }
+
+        if (dto.getEndTime().isBefore(dto.getStartTime())) {
+            throw new IllegalArgumentException("End time cannot be before start time");
+        }
+
         Course course = courseRepository.findById(dto.getCourseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
@@ -48,6 +57,7 @@ public class TimetableService implements ITimetableService {
         if (!isRoomAvailable(dto.getRoomId(), dto.getDate(), dto.getDay(), dto.getStartTime(), dto.getEndTime())) {
             throw new ConflictException("Room is already occupied at this time");
         }
+
 
         Timetable timetable = timetableMapper.toEntity(dto);
         timetable.setCourse(course);

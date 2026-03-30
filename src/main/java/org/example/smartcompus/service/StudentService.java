@@ -10,6 +10,9 @@ import org.example.smartcompus.model.Student;
 import org.example.smartcompus.repository.MajorRepository;
 import org.example.smartcompus.repository.StudentRepository;
 import org.example.smartcompus.service.interfaces.IStudentService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +50,16 @@ public class StudentService implements IStudentService {
         return studentRepository.findAll().stream()
                 .map(studentMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    public Page<StudentResponseDto> getStudentsPaginated(int page, int size, String sortBy, String sortDirection) {
+        Sort sort = "desc".equalsIgnoreCase(sortDirection)
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        return studentRepository.findAll(PageRequest.of(page, size, sort))
+                .map(studentMapper::toDto);
     }
 
     @Override

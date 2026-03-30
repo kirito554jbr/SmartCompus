@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.smartcompus.dto.RoomDto.RoomDto;
 import org.example.smartcompus.service.interfaces.IRoomService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,15 @@ public class RoomController {
     @GetMapping
     public ResponseEntity<List<RoomDto>> getAllRooms() {
         return ResponseEntity.ok(roomService.getRooms());
+    }
+
+    @GetMapping("/paginated")
+    public ResponseEntity<Page<RoomDto>> getRoomsPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+        return ResponseEntity.ok(roomService.getRoomsPaginated(page, size, sortBy, sortDirection));
     }
 
     @GetMapping("/{id}")

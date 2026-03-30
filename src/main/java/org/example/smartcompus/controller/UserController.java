@@ -7,7 +7,7 @@ import org.example.smartcompus.dto.UserDto.UserRequestDto;
 import org.example.smartcompus.dto.UserDto.UserResponseDto;
 import org.example.smartcompus.model.enums.UserRole;
 import org.example.smartcompus.service.interfaces.IUserService;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +20,19 @@ public class UserController {
 
     private final IUserService userService;
 
+    @GetMapping
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
 
+    @GetMapping("/paginated")
+    public ResponseEntity<Page<UserResponseDto>> getUsersPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "idUser") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+        return ResponseEntity.ok(userService.getUsersPaginated(page, size, sortBy, sortDirection));
+    }
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateProfile(

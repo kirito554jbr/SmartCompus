@@ -12,7 +12,6 @@ import java.util.List;
 
 @Repository
 public interface TimetableRepository extends JpaRepository<Timetable, Long> {
-    // Get schedule for a specific day
     List<Timetable> findByDay(String day);
     List<Timetable> findByCourse_Teacher_IdUser(Long teacherId);
 

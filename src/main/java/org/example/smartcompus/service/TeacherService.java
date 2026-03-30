@@ -6,6 +6,9 @@ import org.example.smartcompus.dto.TeacherDto.TeacherResponseDto;
 import org.example.smartcompus.exceptions.ResourceNotFoundException;
 import org.example.smartcompus.repository.TeacherRepository;
 import org.example.smartcompus.service.interfaces.ITeacherService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,5 +41,15 @@ public class TeacherService implements ITeacherService {
         return teacherRepository.findAll().stream()
                 .map(teacherMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    public Page<TeacherResponseDto> getTeachersPaginated(int page, int size, String sortBy, String sortDirection) {
+        Sort sort = "desc".equalsIgnoreCase(sortDirection)
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        return teacherRepository.findAll(PageRequest.of(page, size, sort))
+                .map(teacherMapper::toDto);
     }
 }
